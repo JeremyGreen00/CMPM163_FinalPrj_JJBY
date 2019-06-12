@@ -3,4 +3,6 @@ teammates (As shown on slack):
 -Jeremy Green
 -Jeanette Mui
 -BrianB
--Yuming Li# CMPM163_FinalPrj_JJBY
+-Yuming Li
+
+# CMPM163_FinalPrj_JJBY
