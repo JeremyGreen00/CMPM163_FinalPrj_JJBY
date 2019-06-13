@@ -19,6 +19,7 @@ public class RenderMaterialFullscreen : MonoBehaviour
     {
         int lowResRenderTarget = Shader.PropertyToID("_LowResRenderTarget");
 
+
         CommandBuffer cb = new CommandBuffer();
 
         cb.GetTemporaryRT(lowResRenderTarget, this.width, this.height, 0, FilterMode.Trilinear, RenderTextureFormat.ARGB32);

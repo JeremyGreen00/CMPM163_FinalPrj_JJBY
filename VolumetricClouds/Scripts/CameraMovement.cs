@@ -26,15 +26,19 @@ public class CameraMovement : MonoBehaviour
         transform.position += movePosition;
         transform.eulerAngles = transform.eulerAngles - CamRot;
 
-        rend.material.shader = Shader.Find("Volumetric Clouds/Raymarch Example With Cam");
+        if(rend != null)
+        {
+            rend.material.shader = Shader.Find("Volumetric Clouds/Raymarch Example With Cam");
 
-        Color color = rend.material.GetColor("_Color");
-        
-        if(color.a >= 0) {
-            color = new Color(color.r, color.g, color.b, color.a - (fadePerSecond * Time.deltaTime));
-            rend.material.SetColor("_Color", color);
-          //  print(color.a);
-        } 
+            Color color = rend.material.GetColor("_Color");
+
+            if (color.a >= 0)
+            {
+                color = new Color(color.r, color.g, color.b, color.a - (fadePerSecond * Time.deltaTime));
+                rend.material.SetColor("_Color", color);
+                //  print(color.a);
+            }
+        }
         // else {
         //      cam.enabled = false;
         //      print("toggle");
