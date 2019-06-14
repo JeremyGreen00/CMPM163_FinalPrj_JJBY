@@ -12,13 +12,13 @@ Shader "Custom/VolumeShader"
         _MinDistance("Min Distance", float) = 0.01
         _Steps("Steps", int) = 64
 
-        _CloudDensity("Cloud Density", Vector) = (0.18, 0.8,0,0)
         _NoiseOffsets("Noise Offsets", 2D) = "white" {}
         _NoiseBlend("Noise Blend", 2D) = "white" {}
 
         _ViewDistance("View Distance", Range(0, 5)) = 3.36
         _Iterations("Iterations", Range(0, 500)) = 325
         _CloudDensity("Cloud Density", Vector) = (0.18, 0.8,0,0)
+        //_Time.y("Time", float) = 1
     }
         SubShader
     {
@@ -44,52 +44,101 @@ Shader "Custom/VolumeShader"
             float4 _Centre, _CloudDensity;
             sampler2D _NoiseOffsets, _NoiseBlend;
 
+            //uniform float _Time.y;
+
             struct v2f
             {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
                 float3 wPos : TEXCOORD1; // World position
             }; 
+            
+            float map5(in float3 p)
+            {
+                float3 q = p - float3(0.0, 0.1, 1.0)*_Time.y;
+                float f;
+                f = 0.50000*noise(q); q = q * 2.02;
+                f += 0.25000*noise(q); q = q * 2.03;
+                f += 0.12500*noise(q); q = q * 2.01;
+                f += 0.06250*noise(q); q = q * 2.02;
+                f += 0.03125*noise(q);
+                return clamp(1.5 - p.y - 2.0 + 1.75*f, 0.0, 1.0);
+            }
 
+            float map4(in float3 p)
+            {
+                float3 q = p - float3(0.0, 0.1, 1.0)*_Time.y;
+                float f;
+                f = 0.50000*noise(q); q = q * 2.02;
+                f += 0.25000*noise(q); q = q * 2.03;
+                f += 0.12500*noise(q); q = q * 2.01;
+                f += 0.06250*noise(q);
+                return clamp(1.5 - p.y - 2.0 + 1.75*f, 0.0, 1.0);
+            }
+            float map3(in float3 p)
+            {
+                float3 q = p - float3(0.0, 0.1, 1.0)*_Time.y;
+                float f;
+                f = 0.50000*noise(q); q = q * 2.02;
+                f += 0.25000*noise(q); q = q * 2.03;
+                f += 0.12500*noise(q);
+                return clamp(1.5 - p.y - 2.0 + 1.75*f, 0.0, 1.0);
+            }
+            float map2(in float3 p)
+            {
+                float3 q = p - float3(0.0, 0.1, 1.0)*_Time.y;
+                float f;
+                f = 0.50000*noise(q); q = q * 2.02;
+                f += 0.25000*noise(q);;
+                return clamp(1.5 - p.y - 2.0 + 1.75*f, 0.0, 1.0);
+            }
+            float4 integrate(in float4 sum, in float dif, in float den, in float3 bgcol, in float t)
+            {
+                // lighting
+                float3 lin = float3(0.65, 0.7, 0.75)*1.4 + float3(1.0, 0.6, 0.3)*dif;
+                float4 col = float4(lerp(float3(1.0, 0.95, 0.8), float3(0.25, 0.3, 0.35), den), den);
+                col.xyz *= lin;
+                col.xyz = lerp(col.xyz, bgcol, 1.0 - exp(-0.003*t*t));
+                // front to back blending    
+                col.a *= 0.4;
+                col.rgb *= col.a;
+                return sum + col * (1.0 - sum.a);
+            }
+            //  Map the shape
             float map(float3 p)
             {
                 return distance(p, _Centre.xyz) - _Radius;
             }
 
-            float3 normal(float3 p)
+            //  Noise function
+            float noise(in float3 x)
             {
-                const float eps = 0.01;
-
-                return normalize
-                (float3
-                    (map(p + float3(eps, 0, 0)) - map(p - float3(eps, 0, 0)),
-                        map(p + float3(0, eps, 0)) - map(p - float3(0, eps, 0)),
-                        map(p + float3(0, 0, eps)) - map(p - float3(0, 0, eps))
-                        )
-                );
-            }
-            // Shamelessly stolen from https://www.shadertoy.com/view/4sfGzS
-            float noise(float3 x)
-            {
-                x *= 4.0;
+                return 1;
+                /*
                 float3 p = floor(x);
                 float3 f = frac(x);
+                float2 rg = float2(0, 0);
                 f = f * f*(3.0 - 2.0*f);
-                float2 uv = (p.xy + float2(37.0, 17.0)*p.z) + f.xy;
-                float2 rg = tex2D(_NoiseOffsets, (uv + 0.5) / 256.0).yx;
-                return lerp(rg.x, rg.y, f.z);
-            }
-            float fbm(float3 pos, int octaves)
-            {
-                float f = 0.;
-                for (int i = 0; i < octaves; i++)
+
+                if (true)
                 {
-                    f += noise(pos) / pow(2, i + 1); pos *= 2.01;
+                    float2 uv = (p.xy + float2(37.0, 17.0)*p.z) + f.xy;
+                    rg = tex2D(_NoiseOffsets, (uv + 0.5) / 256.0).yx;
                 }
-                f /= 1 - 1 / pow(2, octaves + 1);
-                return f;
+                else
+                {
+                    int3 q = int3(p);
+                    int2 uv = q.xy + int2(37, 17)*q.z;
+                    rg = lerp(lerp(  tex2D(_NoiseOffsets, (uv             ) & 255),
+                                            tex2D(_NoiseOffsets, (uv + int2(1, 0)) & 255), f.x),
+                                     lerp(  tex2D(_NoiseOffsets, (uv + int2(0, 1)) & 255),
+                                            tex2D(_NoiseOffsets, (uv + int2(1, 1)) & 255), f.x), f.y).yx;
+                }
+
+                return -1.0 + 2.0*lerp(rg.x, rg.y, f.z); //*/
             }
 
+            //  Render a lambert
             fixed4 simpleLambert(fixed3 normal) {
                 fixed3 lightDir = _WorldSpaceLightPos0.xyz; // Light direction
                 fixed3 lightCol = _LightColor0.rgb; // Light color
@@ -104,50 +153,31 @@ Shader "Custom/VolumeShader"
                 return c;
             }
 
-            fixed4 renderSurface(float3 p)
-            {
-                float3 n = normal(p);
-                return simpleLambert(n);
-            }
-
-            //  Does this render a cloud?
-            fixed4 cloudRender(float3 ray, float3 pos)
-            {
-                fixed3 lightDir = _WorldSpaceLightPos0.xyz; // Light direction
-                fixed3 lightCol = _LightColor0.rgb; // Light color
-                fixed NdotL = max(dot(normal(pos), lightDir), 0);
-
-                float3 p = pos;
-                float cloudDensity = 0;
-                float maxDensity = 0;
-
-                for (float i = 0; i < _Iterations; i++)
-                {
-                    float sphere = smoothstep(0, -1, map(p));
-                    float f = i / _Iterations;
-                    float alpha = smoothstep(0, 20, i) * (1 - f) * (1 - f);
-                    float clouds = smoothstep(_CloudDensity.x, _CloudDensity.y, fbm(p, 5)) * sphere;
-                    maxDensity = max(maxDensity, clouds + 0.1);
-                    cloudDensity += clouds * alpha * smoothstep(0.7, 0.4, maxDensity);
-                    p = pos + ray * f * _ViewDistance;
-                }
-
-                float cloudFactor = 1 - (cloudDensity / _Iterations) * 20 * _Color.a;
-                float4 color = lerp(_Color, float4(1, 1, 1, 0), smoothstep(max(0.3 , NdotL), 1, cloudFactor));
-                return fixed4(color * cloudFactor);
-            }
+#define MARCH(STEPS,MAPLOD) for(int i=0; i<STEPS; i++) { float3  pos = position; if( pos.y<-3.0 || pos.y>2.0 || sum.a > 0.99 ) break; float den = MAPLOD( pos ); if( den>0.01 ) { float dif =  clamp((den - MAPLOD(pos+0.3*direction))/0.6, 0.0, 1.0 ); sum = integrate( sum, dif, den, _Color.rgb, t ); } t += max(0.05,0.02*t); }
 
             fixed4 raymarch(inout float3 position, float3 direction)
             {
+                float4 sum = float4(0, 0, 0, 0);
+
+                float t = 0.0;//0.05*texelFetch(iChannel0, px & 255, 0).x;
+
                 for (int i = 0; i < _Steps; i++)
                 {
-                    float distance = map(position);
-                    if (distance < _MinDistance)
-                        return renderSurface(position);
-
-                    position += distance * direction;
+                    if (position.y<-3.0 || position.y>2.0 || sum.a > 0.99) break;
+                    float den = map5(position);
+                    if (den > 0.01)
+                    {
+                        float dif = clamp((den - map5(position + 0.3*direction)) / 0.6, 0.0, 1.0);
+                        sum = integrate(sum, dif, den, _Color, t);
+                    }
+                    t += max(0.05, 0.02*t);
                 }
-                return fixed4(1, 1, 1, 0);
+                //MARCH(_Steps, map5);
+                //MARCH(_Steps, map4);
+                //MARCH(_Steps, map3);
+                //MARCH(_Steps, map2);
+
+                return clamp(sum, 0.0, 1.0);//*/
             }
 
             v2f vert(appdata_base  v)
@@ -162,11 +192,24 @@ Shader "Custom/VolumeShader"
             fixed4 frag(v2f i) : SV_Target
             {
                 float3 worldPosition = i.wPos;
-                ObjUVS = i.uv;
                 viewDirection = normalize(i.wPos - _WorldSpaceCameraPos);
-                //return raymarch(worldPosition, viewDirection);
-                fixed4 position = raymarch(worldPosition, viewDirection);
-                return cloudRender(viewDirection, worldPosition);//_Color * 
+                fixed3 lightDir = _WorldSpaceLightPos0.xyz; // Light direction
+                fixed3 lightCol = _LightColor0.rgb; // Light color
+                return fixed4(0,0,0,0);
+                /*
+                // background sky     
+                float sun = clamp(dot(lightDir, viewDirection), 0.0, 1.0);
+                float3 col = float3(0.6, 0.71, 0.75) - viewDirection.y*0.2*float3(1.0, 0.5, 1.0) + 0.15*0.5;
+                col += 0.2*float3(1.0,.6,0.1)*pow( sun, 8.0 );
+
+                // clouds    
+                float4 res = raymarch(worldPosition, viewDirection);
+                col = col * (1.0 - res.w) + res.xyz;
+
+                // sun glare    
+                //col += 0.2*float3(1.0,0.4,0.2)*pow( sun, 3.0 );
+
+                return float4(col, 1.0);*/
             }
             ENDCG
         }

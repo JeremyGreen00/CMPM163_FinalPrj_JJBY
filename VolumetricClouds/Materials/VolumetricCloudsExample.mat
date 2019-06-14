@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: VolumetricCloudsExample
-  m_Shader: {fileID: 4800000, guid: acbb57ce1bd0fa74e8bd2b2a151ce458, type: 3}
+  m_Shader: {fileID: 4800000, guid: 213253476de80fd4da801fb213a69185, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -88,21 +88,22 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Radius: 7.42
+    - _Radius: 6.08
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SpecularPower: 10
     - _SrcBlend: 1
     - _Steps: 64
     - _UVSec: 0
-    - _ViewDistance: 2.63
+    - _ViewDistance: 5
     - _ZWrite: 1
     - _seed: 9.65
     - _size: 17.02
+    - iTime: 1
     m_Colors:
-    - _Centre: {r: 0, g: 0, b: 0, a: 0}
+    - _Centre: {r: 60.7, g: 11.8, b: 50.1, a: 0}
     - _CloudColor: {r: 1, g: 1, b: 1, a: 0.32941177}
-    - _CloudDensity: {r: 0.16, g: 2, b: 0, a: 0}
+    - _CloudDensity: {r: 0.55, g: 0.33, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SkyColor: {r: 0.09567462, g: 0.35384005, b: 0.4716981, a: 1}
