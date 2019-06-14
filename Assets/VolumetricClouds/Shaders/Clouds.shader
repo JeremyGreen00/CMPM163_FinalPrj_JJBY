@@ -178,7 +178,7 @@
                 float4 color = lerp(float4(0, 0, 0, 0), cloudColor, smoothstep(0.2, 1, cloudFactor));
                 // );
                 //if (cloudFactor  > 1) return float4(0, 0, 0, 0);
-                //if (smoothstep(1, -1, map(pos)) == 0) return float4(0, 0, 0, 0);
+                if (smoothstep(1, -1, map(pos)) == 0) return float4(0, 0, 0, 0);
                 return fixed4(color * cloudFactor);// , color.a * cloudPatters * cloudFactor);
             }
 

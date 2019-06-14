@@ -87,7 +87,7 @@ Material:
     - _Metallic: 0
     - _MinDistance: 0.01
     - _Mode: 0
-    - _NoiseBlendScale: 1
+    - _NoiseBlendScale: 203
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Radius: 112.75
@@ -107,7 +107,7 @@ Material:
     - _Centre: {r: 0, g: 0, b: 0, a: 0}
     - _CloudColor: {r: 1, g: 1, b: 1, a: 0.32941177}
     - _CloudDensity: {r: 0.52, g: 1, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 0.3019608}
+    - _Color: {r: 0.6698113, g: 0.6545405, b: 0.57818615, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Radius: {r: 1, g: 1, b: 1, a: 0}
     - _SkyColor: {r: 0.09567462, g: 0.35384005, b: 0.4716981, a: 1}
