@@ -4,6 +4,7 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		[NoScaleOffset] _FlowMap ("Flow (RG, A noise)", 2D) = "black" {}
 		[NoScaleOffset] _DerivHeightMap ("Deriv (AG) Height (B)", 2D) = "black" {}
+        _Reflectance ("Reflectance", Range(0,1)) = 1.0
 		_UJump ("U jump per phase", Range(-0.25, 0.25)) = 0.25
 		_VJump ("V jump per phase", Range(-0.25, 0.25)) = 0.25
 		_Tiling ("Tiling", Float) = 1
@@ -49,13 +50,16 @@
             }
             sampler2D _MainTex;
             sampler2D _ReflectionTex;
-            float4 _Color2;
+            //float4 _Color2;
+            float _Reflectance;
             fixed4 frag(v2f i) : SV_Target
             {
                 //float4 col = _Color2;
                 //fixed4 tex = tex2D(_MainTex, i.uv);
+                float reflIntensity = _Reflectance;
                 float4 refl = tex2Dproj(_ReflectionTex, UNITY_PROJ_COORD(i.refl));
-                return refl;
+                
+                return refl*reflIntensity;
             }
             ENDCG
         }
